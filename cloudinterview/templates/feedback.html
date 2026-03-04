@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>평가 결과</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5" style="max-width: 800px;">
+        <div class="card border-primary mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">💡 AI 면접관 피드백 (점수: {{ eval_result.score }}점)</h4>
+            </div>
+            <div class="card-body">
+                <p class="card-text">{{ eval_result.feedback }}</p>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header">내 답변</div>
+                    <div class="card-body"><p>{{ user_answer }}</p></div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="card h-100 border-success">
+                    <div class="card-header bg-success text-white">모범 답안 키워드</div>
+                    <div class="card-body"><p>{{ question.model_answer }}</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4">
+            <a href="{{ url_for('quiz.question') }}" class="btn btn-primary btn-lg px-5">다음 질문 받기</a>
+        </div>
+    </div>
+</body>
+</html>
