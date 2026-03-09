@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 음성 면접</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0e1a;
+            --surface: #111827;
+            --surface2: #1a2235;
+            --border: #1e2d45;
+            --accent: #00d4ff;
+            --accent2: #7c3aed;
+            --success: #10b981;
+            --danger: #ef4444;
+            --text: #e2e8f0;
+            --muted: #64748b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        .container { max-width: 760px; margin: 0 auto; }
+
+        /* 상단 헤더 */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            animation: fadeUp 0.4s ease both;
+        }
+        .round-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            color: var(--accent);
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 4px;
+            padding: 4px 12px;
+        }
+        .category-badge {
+            font-size: 12px;
+            color: var(--muted);
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            padding: 4px 12px;
+        }
+
+        /* 질문 카드 */
+        .question-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 24px;
+            animation: fadeUp 0.5s ease both;
+        }
+        .q-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent);
+            letter-spacing: 0.1em;
+            margin-bottom: 12px;
+        }
+        .question-text {
+            font-size: 20px;
+            font-weight: 700;
+            line-height: 1.6;
+        }
+        .audio-row {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .audio-btn {
+            background: rgba(0,212,255,0.08);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 6px;
+            color: var(--accent);
+            font-size: 13px;
+            padding: 7px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .audio-btn:hover { background: rgba(0,212,255,0.15); }
+
+        /* 녹음 카드 */
+        .record-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            text-align: center;
+            margin-bottom: 24px;
+            animation: fadeUp 0.6s ease both;
+        }
+        .record-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, var(--danger), #b91c1c);
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 0 0 0 rgba(239,68,68,0.4);
+            transition: transform 0.1s;
+        }
+        .record-btn:hover { transform: scale(1.05); }
+        .record-btn.recording {
+            animation: ripple 1.5s infinite;
+        }
+        @keyframes ripple {
+            0%   { box-shadow: 0 0 0 0 rgba(239,68,68,0.5); }
+            70%  { box-shadow: 0 0 0 20px rgba(239,68,68,0); }
+            100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+        }
+        .status-text {
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--muted);
+            min-height: 20px;
+        }
+        .status-text.active { color: var(--accent); }
+        .status-text.done   { color: var(--success); }
+        .status-text.error  { color: var(--danger); }
+
+        /* 답변 폼 */
+        .answer-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 32px;
+            animation: fadeUp 0.7s ease both;
+        }
+        .form-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            color: var(--muted);
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 10px;
+        }
+        textarea {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 14px;
+            line-height: 1.7;
+            padding: 16px;
+            resize: vertical;
+            min-height: 140px;
+            margin-bottom: 20px;
+            transition: border-color 0.2s;
+        }
+        textarea:focus { outline: none; border-color: var(--accent); }
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--success), #059669);
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+        .submit-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <span class="round-badge">ROUND {{ round_num }}</span>
+            <span class="category-badge">{{ question.category }}</span>
+        </div>
+
+        <!-- 질문 카드 -->
+        <div class="question-card">
+            <div class="q-label">QUESTION</div>
+            <div class="question-text">{{ question.content }}</div>
+            <div class="audio-row">
+                <audio id="qAudio" src="{{ audio_url }}" autoplay></audio>
+                <button class="audio-btn" onclick="document.getElementById('qAudio').play()">🔈 다시 듣기</button>
+            </div>
+        </div>
+
+        <!-- 녹음 카드 -->
+        <div class="record-card">
+            <button id="recordBtn" class="record-btn">🎤</button>
+            <p id="status" class="status-text">버튼을 눌러 답변을 말씀해주세요</p>
+        </div>
+
+        <!-- 답변 제출 폼 -->
+        <div class="answer-card">
+            <form action="{{ url_for('quiz.submit') }}" method="post">
+                <label class="form-label">인식된 답변</label>
+                <textarea id="userAnswer" name="user_answer"
+                    placeholder="음성 인식이 완료되면 여기에 텍스트가 나타납니다. 직접 수정도 가능합니다." required></textarea>
+                <button type="submit" class="submit-btn">✅ 평가 제출하기</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const recordBtn  = document.getElementById('recordBtn');
+        const userAnswer = document.getElementById('userAnswer');
+        const status     = document.getElementById('status');
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            status.textContent = '❌ 이 브라우저는 음성 인식을 지원하지 않습니다. Chrome을 사용해주세요.';
+            status.className = 'status-text error';
+            recordBtn.disabled = true;
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'ko-KR';
+            recognition.interimResults = false;
+
+            recordBtn.onclick = () => {
+                recognition.start();
+                status.textContent = '🎤 듣고 있습니다... 말씀해주세요.';
+                status.className = 'status-text active';
+                recordBtn.classList.add('recording');
+            };
+
+            recognition.onresult = (event) => {
+                userAnswer.value = event.results[0][0].transcript;
+                status.textContent = '✅ 인식 완료! 내용을 확인하고 제출하세요.';
+                status.className = 'status-text done';
+                recordBtn.classList.remove('recording');
+            };
+
+            recognition.onerror = () => {
+                status.textContent = '❌ 인식에 실패했습니다. 다시 시도해주세요.';
+                status.className = 'status-text error';
+                recordBtn.classList.remove('recording');
+            };
+
+            recognition.onend = () => {
+                recordBtn.classList.remove('recording');
+            };
+        }
+    </script>
+</body>
+</html>

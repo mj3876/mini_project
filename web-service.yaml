@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-service
+spec:
+  type: NodePort #Rancher desktop은 로드밸런서 기능을 제공하지 않아 NodePort type으로 설정
+  selector:
+    app: web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000 #이미지(5000)->컨테이너(파드)(5000)->서비스(80)
+      nodePort: 31337

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-deployment
+  labels:
+    app: DB
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: DB
+  template:
+    metadata:
+      labels:
+        app: DB
+    spec:
+      containers:
+      - name: db-container
+        image: mj3876/cloud_interview_db:1.1
+        ports:
+        - containerPort: 3306 #외부 노출X->이미지 포트 5000
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: DB_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_USER
+        
