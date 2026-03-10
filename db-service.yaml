@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  type: ClusterIP
+  selector:
+    app: DB
+  ports:
+    - protocol: TCP
+      port: 3306
+      targetPort: 3306 #외부노출 없음->이미지와 컨테이너는 각각 5000
