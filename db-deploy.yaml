@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db-deployment
+  labels:
+    app: DB
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: DB
+  template:
+    metadata:
+      labels:
+        app: DB
+    spec:
+      volumes:
+      - name: db-vol #이 volume-name이랑 volumemount와 같아야
+        persistentVolumeClaim:
+          claimName: db-pvc
+      containers:
+      - name: db-container
+        image: mj3876/cloud_interview_db:1.1
+        ports:
+        - containerPort: 3306 #외부 노출X
+        volumeMounts:
+        - name: db-vol #volumeMount의 volume-name이랑 같아야
+          mountPath: /var/lib/mysql #Mysql은 데이터를 /var밑에 저장. 임의로 설정하면 데이터 보존이 안됨
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: app-secret
+              key: DB_PASSWORD
+        - name: MYSQL_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_NAME
+        - name: DB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: app-config
+              key: DB_USER
+      
